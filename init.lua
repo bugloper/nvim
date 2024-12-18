@@ -3,6 +3,7 @@
 require('core.options')
 require('core.keymaps')
 require('core.autocmds')
+require('core.floaminal')  -- Load floating terminal
 
 -- Bootstrap and configure lazy.nvim
 require('core.lazy')
