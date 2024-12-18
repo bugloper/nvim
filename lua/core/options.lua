@@ -17,6 +17,8 @@ vim.schedule(function()
   opt.clipboard = 'unnamedplus'
 end)
 
+vim.wo.relativenumber = true
+
 -- Indentation
 opt.tabstop = 2
 opt.shiftwidth = 2
@@ -33,6 +35,9 @@ opt.updatetime = 250
 opt.timeoutlen = 300
 opt.splitright = true
 opt.splitbelow = true
+opt.wrap = false           -- Disable line wrap
+opt.termguicolors = true   -- Enable 24-bit RGB colors
+opt.colorcolumn = '80'     -- Show a column at 80 characters
 
 -- Display
 opt.list = true
