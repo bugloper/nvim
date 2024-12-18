@@ -84,9 +84,23 @@ function M.toggle_terminal()
   end
 end
 
+function M.clear_terminal()
+  if M.term_buf and vim.api.nvim_buf_is_valid(M.term_buf) then
+    -- Get the terminal channel ID
+    local chan = vim.b[M.term_buf].terminal_job_id
+    if chan then
+      -- Clear the screen and move cursor to top
+      vim.api.nvim_chan_send(chan, [[printf "\033c"]]) 
+    end
+  end
+end
+
 -- Set up keymaps
-vim.keymap.set('n', '<leader>tt', M.toggle_terminal, { noremap = true, silent = true, desc = 'Toggle floating terminal' })
+vim.keymap.set('n', '<leader>ff', M.toggle_terminal, { noremap = true, silent = true, desc = 'Toggle floating terminal' })
 -- Add escape keymap for terminal mode to easily close the terminal
 vim.keymap.set('t', '<Esc>', [[<C-\><C-n>]], { buffer = M.term_buf, desc = 'Exit terminal mode' })
+-- Add clear terminal keymap (Cmd+k or Ctrl+k)
+vim.keymap.set('t', '<D-k>', function() M.clear_terminal() end, { noremap = true, silent = true, desc = 'Clear terminal' })
+vim.keymap.set('t', '<C-k>', function() M.clear_terminal() end, { noremap = true, silent = true, desc = 'Clear terminal' })
 
 return M
