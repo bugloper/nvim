@@ -48,3 +48,11 @@ opt.scrolloff = 10
 
 -- File handling
 opt.undofile = true
+
+-- Set transparency
+vim.opt.winblend = 15  -- Window transparency (0-100)
+vim.opt.pumblend = 15  -- Popup menu transparency (0-100)
+
+-- If you're using Neovim 0.8+ and want background transparency
+vim.api.nvim_set_hl(0, "Normal", { bg = "NONE" })
+vim.api.nvim_set_hl(0, "NormalFloat", { bg = "NONE" })
