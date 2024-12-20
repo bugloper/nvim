@@ -48,3 +48,32 @@ opt.scrolloff = 10
 
 -- File handling
 opt.undofile = true
+
+-- Enable true colors and transparency support
+vim.o.termguicolors = true
+vim.o.background = "dark"
+
+-- Set transparent background for various UI elements
+local function set_transparent_bg()
+    local groups = {
+        'Normal', 'NormalFloat', 'NormalNC', 'SignColumn',
+        'EndOfBuffer', 'LineNr', 'Folded', 'VertSplit',
+        'StatusLine', 'StatusLineNC', 'TabLine', 'TabLineFill'
+    }
+    for _, group in ipairs(groups) do
+        vim.api.nvim_set_hl(0, group, { bg = "NONE", ctermbg = "NONE" })
+    end
+end
+
+-- Apply transparency when colorscheme changes
+vim.api.nvim_create_autocmd("ColorScheme", {
+    pattern = "*",
+    callback = set_transparent_bg
+})
+
+-- Apply transparency immediately
+set_transparent_bg()
+
+-- Window and popup menu transparency
+opt.winblend = 15        -- Window transparency (0-100)
+opt.pumblend = 15        -- Popup menu transparency (0-100)
