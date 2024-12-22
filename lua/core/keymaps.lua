@@ -5,8 +5,8 @@ local keymap = vim.keymap.set
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
--- File explorer
-keymap("n", "<leader>pv", vim.cmd.Ex, { desc = "Open file explorer" })
+-- File explorer (:Ex)
+keymap("n", "<leader>e", vim.cmd.Ex, { noremap = true, desc = 'Open file explorer' })
 
 -- Move lines up and down with auto-formatting
 keymap("v", "J", ":m '>+1<CR>gv=gv", { desc = "Move line down" })
@@ -67,3 +67,5 @@ keymap('v', 'gU', 'U', { noremap = true, desc = 'Convert to uppercase' })    -- 
 
 -- Modify word motion in visual mode to stop at end of line
 keymap('v', 'w', 'e', { noremap = true, desc = 'Move to end of next word' })
+-- Select entire file
+keymap("n", "<C-a>", "ggVG", { noremap = true, desc = "Select entire file" })

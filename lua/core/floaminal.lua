@@ -89,8 +89,10 @@ function M.clear_terminal()
     -- Get the terminal channel ID
     local chan = vim.b[M.term_buf].terminal_job_id
     if chan then
-      -- Clear the screen and move cursor to top
-      vim.api.nvim_chan_send(chan, [[printf "\033c"]]) 
+      -- Clear the screen and reset cursor position
+      vim.api.nvim_chan_send(chan, [[clear && printf '\033[3J\033[H']])
+      -- Force a redraw of the screen
+      vim.cmd('redraw!')
     end
   end
 end
