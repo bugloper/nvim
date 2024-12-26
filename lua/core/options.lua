@@ -77,3 +77,9 @@ set_transparent_bg()
 -- Window and popup menu transparency
 opt.winblend = 15        -- Window transparency (0-100)
 opt.pumblend = 15        -- Popup menu transparency (0-100)
+
+-- Cursor style configuration
+opt.guicursor = "a:ver80"
+-- Explanation:
+-- a: All modes - vertical cursor (80% width)
+-- This replaces the previous mode-specific settings with a global setting
