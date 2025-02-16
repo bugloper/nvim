@@ -12,3 +12,10 @@ require('lazy').setup({
   -- Load plugin specifications from separate files
   { import = 'plugins' },  -- This will load all files in lua/plugins/*.lua
 }, require('core.lazy'))   -- Load lazy.nvim configuration
+
+require("mason").setup({
+  ui = {
+    border = "rounded",
+    winblend = 0, -- Set to 0 for full opacity
+  }
+})
