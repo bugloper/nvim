@@ -40,7 +40,7 @@ function M.open_terminal()
     })
     
     -- Set window options
-    vim.wo[M.term_win].winblend = 10
+    vim.wo[M.term_win].winblend = 0
     vim.wo[M.term_win].winhl = "Normal:Normal"
   else
     -- Create new buffer
