@@ -66,6 +66,11 @@ return {
           filetypes = { "ruby" },
           root_dir = require('lspconfig').util.root_pattern(".git", "."),
         },
+        gopls = {
+          cmd = { "gopls" },
+          filetypes = { "go", "gomod" },
+          root_dir = require('lspconfig').util.root_pattern("go.mod", ".git"),
+        },
       }
 
       require('mason').setup()
@@ -88,8 +93,9 @@ return {
         },
       }
 
-      -- Manually set up `ruby-ls`
+      -- Manually set up `ruby-ls` and `gopls`
       require('lspconfig').ruby_lsp.setup(servers.ruby_lsp)
+      require('lspconfig').gopls.setup(servers.gopls)
     end,
   },
 }

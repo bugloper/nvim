@@ -19,3 +19,27 @@ require("mason").setup({
     winblend = 0, -- Set to 0 for full opacity
   }
 })
+
+
+vim.api.nvim_create_autocmd("ColorScheme", {
+  pattern = "*",
+  callback = function()
+    vim.cmd [[
+      highlight NormalFloat guibg=#000000
+      highlight FloatBorder guibg=#000000
+      set winhighlight=NormalFloat:Normal,FloatBorder:Normal
+    ]]
+  end,
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "harpoon",
+  callback = function()
+    vim.cmd [[
+      highlight NormalFloat guibg=#000000
+      highlight FloatBorder guibg=#000000
+      set winhighlight=NormalFloat:Normal,FloatBorder:Normal
+    ]]
+  end,
+})
+
