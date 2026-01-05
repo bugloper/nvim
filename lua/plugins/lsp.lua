@@ -43,6 +43,19 @@ return {
       local capabilities = vim.lsp.protocol.make_client_capabilities()
       capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
 
+      -- Helper function to replace root_pattern
+      local function root_pattern(...)
+        local patterns = { ... }
+        return function(fname)
+          local path = vim.fs.dirname(fname)
+          local found = vim.fs.find(patterns, { path = path, upward = true })[1]
+          if found then
+            return vim.fs.dirname(found)
+          end
+          return path
+        end
+      end
+
       local servers = {
         lua_ls = {
           settings = {
@@ -64,12 +77,12 @@ return {
         ruby_lsp = {
           cmd = { "ruby-lsp" },
           filetypes = { "ruby" },
-          root_dir = require('lspconfig').util.root_pattern(".git", "."),
+          root_dir = root_pattern(".git", "."),
         },
         gopls = {
           cmd = { "gopls" },
           filetypes = { "go", "gomod" },
-          root_dir = require('lspconfig').util.root_pattern("go.mod", ".git"),
+          root_dir = root_pattern("go.mod", ".git"),
         },
       }
 
@@ -88,14 +101,17 @@ return {
           function(server_name)
             local server = servers[server_name] or {}
             server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
-            require('lspconfig')[server_name].setup(server)
+            vim.lsp.config(server_name, server)
+            vim.lsp.enable(server_name)
           end,
         },
       }
 
       -- Manually set up `ruby-ls` and `gopls`
-      require('lspconfig').ruby_lsp.setup(servers.ruby_lsp)
-      require('lspconfig').gopls.setup(servers.gopls)
+      vim.lsp.config('ruby_lsp', servers.ruby_lsp)
+      vim.lsp.enable('ruby_lsp')
+      vim.lsp.config('gopls', servers.gopls)
+      vim.lsp.enable('gopls')
     end,
   },
 }
