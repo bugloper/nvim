@@ -47,9 +47,28 @@ return {
       local function root_pattern(...)
         local patterns = { ... }
         return function(fname)
-          local path = vim.fs.dirname(fname)
+          -- Handle buffer number or file path
+          local file_path = fname
+          if type(fname) == 'number' then
+            file_path = vim.api.nvim_buf_get_name(fname)
+            if file_path == '' then
+              -- If buffer has no file, use current working directory
+              return vim.fn.getcwd()
+            end
+          end
+          
+          -- Ensure we have a valid string path
+          if type(file_path) ~= 'string' or file_path == '' then
+            return vim.fn.getcwd()
+          end
+          
+          local path = vim.fs.dirname(file_path)
+          if not path or path == '' then
+            return vim.fn.getcwd()
+          end
+          
           local found = vim.fs.find(patterns, { path = path, upward = true })[1]
-          if found then
+          if found and type(found) == 'string' then
             return vim.fs.dirname(found)
           end
           return path

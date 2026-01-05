@@ -11,6 +11,7 @@ require('core.lazy')
 require('lazy').setup({
   -- Load plugin specifications from separate files
   { import = 'plugins' },  -- This will load all files in lua/plugins/*.lua
+  { import = 'bugloper.plugins' },  -- Load bugloper plugin configurations
 }, require('core.lazy'))   -- Load lazy.nvim configuration
 
 require("mason").setup({
