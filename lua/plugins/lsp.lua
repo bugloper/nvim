@@ -16,7 +16,12 @@ return {
           end
 
           -- Key mappings for LSP
-          map('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
+          map('gd', function()
+            local ok, _ = pcall(require('telescope.builtin').lsp_definitions)
+            if not ok then
+              vim.lsp.buf.definition()
+            end
+          end, '[G]oto [D]efinition')
           map('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
           map('gI', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
           map('<leader>D', require('telescope.builtin').lsp_type_definitions, 'Type [D]efinition')
@@ -62,16 +67,26 @@ return {
             return vim.fn.getcwd()
           end
           
-          local path = vim.fs.dirname(file_path)
-          if not path or path == '' then
+          -- Convert to absolute path if needed
+          if not vim.fn.isdirectory(file_path) then
+            file_path = vim.fs.dirname(file_path)
+          end
+          
+          if not file_path or file_path == '' then
             return vim.fn.getcwd()
           end
           
-          local found = vim.fs.find(patterns, { path = path, upward = true })[1]
+          -- Make path absolute
+          file_path = vim.fn.fnamemodify(file_path, ':p')
+          
+          local found = vim.fs.find(patterns, { path = file_path, upward = true })[1]
           if found and type(found) == 'string' then
-            return vim.fs.dirname(found)
+            local root = vim.fs.dirname(found)
+            return root ~= '' and root or vim.fn.getcwd()
           end
-          return path
+          
+          -- Fallback to current directory
+          return vim.fn.getcwd()
         end
       end
 
@@ -96,7 +111,27 @@ return {
         ruby_lsp = {
           cmd = { "ruby-lsp" },
           filetypes = { "ruby" },
-          root_dir = root_pattern(".git", "."),
+          root_dir = root_pattern(".git", "Gemfile", "."),
+          init_options = {
+            enabledFeatures = {
+              "codeActions",
+              "codeLens",
+              "completion",
+              "diagnostics",
+              "documentHighlights",
+              "documentLink",
+              "documentSymbols",
+              "foldingRanges",
+              "formatting",
+              "hover",
+              "inlayHint",
+              "onTypeFormatting",
+              "selectionRanges",
+              "semanticHighlighting",
+              "signatureHelp",
+              "workspaceSymbol",
+            },
+          },
         },
         gopls = {
           cmd = { "gopls" },
@@ -125,12 +160,6 @@ return {
           end,
         },
       }
-
-      -- Manually set up `ruby-ls` and `gopls`
-      vim.lsp.config('ruby_lsp', servers.ruby_lsp)
-      vim.lsp.enable('ruby_lsp')
-      vim.lsp.config('gopls', servers.gopls)
-      vim.lsp.enable('gopls')
     end,
   },
 }
