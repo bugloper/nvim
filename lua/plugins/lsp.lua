@@ -16,12 +16,7 @@ return {
           end
 
           -- Key mappings for LSP
-          map('gd', function()
-            local ok, _ = pcall(require('telescope.builtin').lsp_definitions)
-            if not ok then
-              vim.lsp.buf.definition()
-            end
-          end, '[G]oto [D]efinition')
+          map('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
           map('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
           map('gI', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
           map('<leader>D', require('telescope.builtin').lsp_type_definitions, 'Type [D]efinition')
@@ -32,7 +27,7 @@ return {
 
           -- Highlight references
           local client = vim.lsp.get_client_by_id(event.data.client_id)
-          if client and client.server_capabilities.documentHighlightProvider then
+          if client and client:supports_method('textDocument/documentHighlight') then
             vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
               buffer = event.buf,
               callback = vim.lsp.buf.document_highlight,
@@ -45,121 +40,65 @@ return {
         end,
       })
 
-      local capabilities = vim.lsp.protocol.make_client_capabilities()
-      capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
-
-      -- Helper function to replace root_pattern
-      local function root_pattern(...)
-        local patterns = { ... }
-        return function(fname)
-          -- Handle buffer number or file path
-          local file_path = fname
-          if type(fname) == 'number' then
-            file_path = vim.api.nvim_buf_get_name(fname)
-            if file_path == '' then
-              -- If buffer has no file, use current working directory
-              return vim.fn.getcwd()
-            end
-          end
-          
-          -- Ensure we have a valid string path
-          if type(file_path) ~= 'string' or file_path == '' then
-            return vim.fn.getcwd()
-          end
-          
-          -- Convert to absolute path if needed
-          if not vim.fn.isdirectory(file_path) then
-            file_path = vim.fs.dirname(file_path)
-          end
-          
-          if not file_path or file_path == '' then
-            return vim.fn.getcwd()
-          end
-          
-          -- Make path absolute
-          file_path = vim.fn.fnamemodify(file_path, ':p')
-          
-          local found = vim.fs.find(patterns, { path = file_path, upward = true })[1]
-          if found and type(found) == 'string' then
-            local root = vim.fs.dirname(found)
-            return root ~= '' and root or vim.fn.getcwd()
-          end
-          
-          -- Fallback to current directory
-          return vim.fn.getcwd()
-        end
-      end
-
-      local servers = {
-        lua_ls = {
-          settings = {
-            Lua = {
-              runtime = { version = 'LuaJIT' },
-              workspace = {
-                checkThirdParty = false,
-                library = {
-                  '${3rd}/luv/library',
-                  unpack(vim.api.nvim_get_runtime_file('', true)),
-                },
-              },
-              completion = {
-                callSnippet = 'Replace',
-              },
-            },
-          },
-        },
-        ruby_lsp = {
-          cmd = { "ruby-lsp" },
-          filetypes = { "ruby" },
-          root_dir = root_pattern(".git", "Gemfile", "."),
-          init_options = {
-            enabledFeatures = {
-              "codeActions",
-              "codeLens",
-              "completion",
-              "diagnostics",
-              "documentHighlights",
-              "documentLink",
-              "documentSymbols",
-              "foldingRanges",
-              "formatting",
-              "hover",
-              "inlayHint",
-              "onTypeFormatting",
-              "selectionRanges",
-              "semanticHighlighting",
-              "signatureHelp",
-              "workspaceSymbol",
-            },
-          },
-        },
-        gopls = {
-          cmd = { "gopls" },
-          filetypes = { "go", "gomod" },
-          root_dir = root_pattern("go.mod", ".git"),
-        },
-      }
+      local capabilities = vim.tbl_deep_extend(
+        'force',
+        vim.lsp.protocol.make_client_capabilities(),
+        require('cmp_nvim_lsp').default_capabilities()
+      )
 
       require('mason').setup()
-      local ensure_installed = vim.tbl_keys(servers or {})
-      vim.list_extend(ensure_installed, {
-        'stylua',        -- Lua formatter
-        'prettier',      -- JavaScript/TypeScript/CSS/HTML formatter
-        'black',         -- Python formatter
-        'clang-format',  -- C/C++ formatter
-      })
-      require('mason-tool-installer').setup { ensure_installed = ensure_installed }
+
+      -- Formatters/linters only. Language servers are handled by mason-lspconfig
+      -- below. ruby-lsp is deliberately NOT installed through mason: mason bakes
+      -- an absolute ruby shebang into its wrapper, which pins the server to one
+      -- Ruby for every project. ruby-lsp must run on the project's own Ruby.
+      require('mason-tool-installer').setup {
+        ensure_installed = { 'stylua', 'prettier', 'black', 'clang-format' },
+      }
 
       require('mason-lspconfig').setup {
-        handlers = {
-          function(server_name)
-            local server = servers[server_name] or {}
-            server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
-            vim.lsp.config(server_name, server)
-            vim.lsp.enable(server_name)
-          end,
-        },
+        ensure_installed = { 'lua_ls', 'gopls' },
+        -- ruby_lsp is configured and enabled by hand, from the project's Ruby.
+        automatic_enable = { exclude = { 'ruby_lsp' } },
       }
+
+      -- nvim 0.11 native config. mason-lspconfig v2 removed the `handlers`
+      -- option, so per-server settings must go through vim.lsp.config directly.
+      vim.lsp.config('*', { capabilities = capabilities })
+
+      vim.lsp.config('lua_ls', {
+        settings = {
+          Lua = {
+            runtime = { version = 'LuaJIT' },
+            workspace = {
+              checkThirdParty = false,
+              library = {
+                '${3rd}/luv/library',
+                unpack(vim.api.nvim_get_runtime_file('', true)),
+              },
+            },
+            completion = { callSnippet = 'Replace' },
+          },
+        },
+      })
+
+      vim.lsp.config('gopls', {
+        cmd = { 'gopls' },
+        filetypes = { 'go', 'gomod' },
+        root_markers = { 'go.mod', 'go.work', '.git' },
+      })
+
+      -- No `enabledFeatures`: when it is an array, ruby-lsp treats every absent
+      -- feature as DISABLED (server.rb -> Hash.new(false)). Omitting it enables
+      -- everything, including "definition" -- which is what `gd` needs.
+      vim.lsp.config('ruby_lsp', {
+        cmd = { 'ruby-lsp' },
+        filetypes = { 'ruby', 'eruby' },
+        root_markers = { 'Gemfile', '.git' },
+        init_options = { formatter = 'auto' },
+      })
+
+      vim.lsp.enable { 'lua_ls', 'gopls', 'ruby_lsp' }
     end,
   },
 }
