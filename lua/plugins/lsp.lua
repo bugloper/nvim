@@ -53,7 +53,7 @@ return {
       -- an absolute ruby shebang into its wrapper, which pins the server to one
       -- Ruby for every project. ruby-lsp must run on the project's own Ruby.
       require('mason-tool-installer').setup {
-        ensure_installed = { 'stylua', 'prettier', 'black', 'clang-format' },
+        ensure_installed = { 'stylua', 'prettier', 'black', 'clang-format', 'markdownlint' },
       }
 
       require('mason-lspconfig').setup {
