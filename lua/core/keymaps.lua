@@ -43,13 +43,13 @@ keymap("n", "Q", "<nop>", { desc = "Disable Ex mode" })
 keymap("n", "<leader>f", vim.lsp.buf.format, { desc = "Format buffer" })
 
 -- Quickfix navigation
-keymap("n", "<C-k>", "<cmd>cnext<CR>zz", { desc = "Next quickfix item" })
-keymap("n", "<C-j>", "<cmd>cprev<CR>zz", { desc = "Previous quickfix item" })
+keymap("n", "]q", "<cmd>cnext<CR>zz", { desc = "Next quickfix item" })
+keymap("n", "[q", "<cmd>cprev<CR>zz", { desc = "Previous quickfix item" })
 keymap("n", "<leader>k", "<cmd>lnext<CR>zz", { desc = "Next location list item" })
 keymap("n", "<leader>j", "<cmd>lprev<CR>zz", { desc = "Previous location list item" })
 
 -- Search and replace current word
-keymap("n", "<leader>s", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]], 
+keymap("n", "<leader>rw", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]], 
     { desc = "Search and replace current word" })
 
 -- Clear search highlights
